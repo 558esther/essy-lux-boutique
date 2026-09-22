@@ -10,33 +10,93 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CollectionsRouteImport } from './routes/collections'
+import { Route as NewArrivalsRouteImport } from './routes/new-arrivals'
+import { Route as ShopRouteImport } from './routes/shop'
+import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
+import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewArrivalsRoute = NewArrivalsRouteImport.update({
+  id: '/new-arrivals',
+  path: '/new-arrivals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CollectionsRoute,
+} as any)
+const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CollectionsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/collections': typeof CollectionsRouteWithChildren
+  '/new-arrivals': typeof NewArrivalsRoute
+  '/shop': typeof ShopRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/collections/': typeof CollectionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/new-arrivals': typeof NewArrivalsRoute
+  '/shop': typeof ShopRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/collections': typeof CollectionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/collections': typeof CollectionsRouteWithChildren
+  '/new-arrivals': typeof NewArrivalsRoute
+  '/shop': typeof ShopRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/collections/': typeof CollectionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/collections'
+    | '/new-arrivals'
+    | '/shop'
+    | '/collections/$slug'
+    | '/collections/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/new-arrivals' | '/shop' | '/collections/$slug' | '/collections'
+  id:
+    | '__root__'
+    | '/'
+    | '/collections'
+    | '/new-arrivals'
+    | '/shop'
+    | '/collections/$slug'
+    | '/collections/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CollectionsRoute: typeof CollectionsRouteWithChildren
+  NewArrivalsRoute: typeof NewArrivalsRoute
+  ShopRoute: typeof ShopRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +108,63 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-arrivals': {
+      id: '/new-arrivals'
+      path: '/new-arrivals'
+      fullPath: '/new-arrivals'
+      preLoaderRoute: typeof NewArrivalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/': {
+      id: '/collections/'
+      path: '/'
+      fullPath: '/collections/'
+      preLoaderRoute: typeof CollectionsIndexRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
+    '/collections/$slug': {
+      id: '/collections/$slug'
+      path: '/$slug'
+      fullPath: '/collections/$slug'
+      preLoaderRoute: typeof CollectionsSlugRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
   }
 }
 
+interface CollectionsRouteChildren {
+  CollectionsSlugRoute: typeof CollectionsSlugRoute
+  CollectionsIndexRoute: typeof CollectionsIndexRoute
+}
+
+const CollectionsRouteChildren: CollectionsRouteChildren = {
+  CollectionsSlugRoute: CollectionsSlugRoute,
+  CollectionsIndexRoute: CollectionsIndexRoute,
+}
+
+const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
+  CollectionsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CollectionsRoute: CollectionsRouteWithChildren,
+  NewArrivalsRoute: NewArrivalsRoute,
+  ShopRoute: ShopRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
