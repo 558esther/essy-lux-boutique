@@ -17,7 +17,7 @@ export const Route = createFileRoute("/contact")({
       { property: "og:description", content: "We would love to hear from you — Mombasa – Bamburi, Kenya." },
     ],
   }),
-  component: Contact;
+  component: Contact,
 });
 
 type Errors = Partial<Record<"name" | "email" | "phone" | "subject" | "message", string>>;
