@@ -321,19 +321,25 @@ function Home() {
             eyebrow={ESSY_LUX_CONFIG.instagramHandle}
             title="Follow the Essy-Lux journey"
           />
-          <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {[...products.slice(0, 5), products[1]].map((p, i) => (
-              <img
-                key={`${p.id}-${i}`}
-                src={p.images[0]}
-                alt={p.name}
-                loading="lazy"
-                width={1024}
-                height={1280}
-                className="aspect-square w-full object-cover transition-transform duration-700 hover:scale-105"
-              />
-            ))}
-          </div>
+          {products.length > 0 ? (
+            <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {[...products.slice(0, 5), products[1] ?? products[0]].map((p, i) => (
+                <img
+                  key={`${p.id}-${i}`}
+                  src={p.images[0]}
+                  alt={p.name}
+                  loading="lazy"
+                  width={1024}
+                  height={1280}
+                  className="aspect-square w-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-12 text-center text-sm text-muted-foreground">
+              Product photos will appear here once bags are added to the store.
+            </p>
+          )}
           <div className="mt-12 text-center">
             {ESSY_LUX_CONFIG.social.instagram ? (
               <a

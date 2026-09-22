@@ -12,4 +12,11 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Deploying to Render (a plain Node host), not Cloudflare — override the
+  // Cloudflare Workers default with Nitro's dedicated Render preset. Only
+  // takes effect outside Lovable's own sandbox build (which forces
+  // cloudflare-module regardless of this setting).
+  nitro: {
+    preset: "render-com",
+  },
 });
