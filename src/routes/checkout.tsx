@@ -2,13 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import {
-  ESSY_LUX_CONFIG,
   buildCartOrderMessage,
   formatPrice,
   openWhatsApp,
   type OrderLine,
 } from "@/lib/config";
 import { useShop } from "@/lib/store";
+import { useSettings } from "@/hooks/use-settings";
+import { createOrderRequest } from "@/lib/queries/catalog";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -30,18 +31,21 @@ type Errors = Partial<Record<"name" | "phone" | "location", string>>;
 
 function Checkout() {
   const { detailedCart, subtotal } = useShop();
+  const { data: settings } = useSettings();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [ready, setReady] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const lines: OrderLine[] = detailedCart.map(({ item, product }) => ({
     name: product.name,
     color: item.color,
     quantity: item.quantity,
     price: product.price,
+    productId: product.id,
   }));
 
   if (lines.length === 0) {
@@ -60,7 +64,7 @@ function Checkout() {
     );
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const next: Errors = {};
     if (!name.trim()) next.name = "Please enter your name.";
@@ -70,14 +74,38 @@ function Checkout() {
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
+    setSubmitting(true);
+    const customer = { name: name.trim(), phone: phone.trim(), location: location.trim(), note };
+
+    try {
+      await createOrderRequest({
+        customerName: customer.name,
+        customerPhone: customer.phone,
+        location: customer.location,
+        note: customer.note,
+        items: lines.map((l) => ({
+          productId: l.productId,
+          productName: l.name,
+          color: l.color,
+          quantity: l.quantity,
+          price: l.price,
+        })),
+      });
+    } catch (err) {
+      console.error("Could not save order request", err);
+    }
+
     openWhatsApp(
-      buildCartOrderMessage(lines, {
-        name: name.trim(),
-        phone: phone.trim(),
-        location: location.trim(),
-        note,
+      buildCartOrderMessage(lines, customer, {
+        brand_name: settings?.brand_name,
+        tagline: settings?.tagline,
+        currency: settings?.currency,
+        whatsapp_greeting: settings?.whatsapp_greeting,
+        whatsapp_closing: settings?.whatsapp_closing,
       }),
+      settings?.whatsapp_number,
     );
+    setSubmitting(false);
     setReady(true);
   }
 
@@ -143,17 +171,17 @@ function Checkout() {
             <legend className="font-display text-xl uppercase tracking-[0.14em]">WhatsApp order</legend>
             <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
               We don&apos;t take card or mobile-money payments on this site. Your order message is prepared for
-              you and opened in WhatsApp — {ESSY_LUX_CONFIG.brandName} will confirm availability, delivery and
-              payment with you there.
+              you and opened in WhatsApp — {settings?.brand_name ?? "ESSY-LUX"} will confirm availability,
+              delivery and payment with you there.
             </p>
             {ready && (
               <p className="mt-5 border border-rose bg-rose/25 px-4 py-3 text-sm" role="status">
-                WhatsApp is ready with your order message. Please review it and press send so Essy-Lux receives
-                your order.
+                ✓ Order request created. WhatsApp is now open with your message — please press{" "}
+                <strong>Send</strong> there so {settings?.brand_name ?? "Essy-Lux"} actually receives it.
               </p>
             )}
-            <button type="submit" className="btn-base btn-whatsapp mt-7 w-full sm:w-auto">
-              💬 Continue to WhatsApp
+            <button type="submit" disabled={submitting} className="btn-base btn-whatsapp mt-7 w-full sm:w-auto">
+              {submitting ? "Preparing…" : "💬 Continue to WhatsApp"}
             </button>
           </fieldset>
         </form>

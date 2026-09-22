@@ -2,7 +2,13 @@ import { useState } from "react";
 import { FloralDivider } from "@/components/Brand";
 import { ESSY_LUX_CONFIG } from "@/lib/config";
 
-export function Newsletter() {
+export function Newsletter({
+  heading = "Join the Essy-Lux list",
+  description = "Be the first to discover new collections, beautiful new arrivals and special updates.",
+}: {
+  heading?: string;
+  description?: string;
+}) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -25,11 +31,9 @@ export function Newsletter() {
       <div className="shell max-w-xl text-center">
         <FloralDivider className="mb-8" />
         <h2 id="newsletter-title" className="section-title">
-          Join the Essy-Lux list
+          {heading}
         </h2>
-        <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-          Be the first to discover new collections, beautiful new arrivals and special updates.
-        </p>
+        <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{description}</p>
         <form onSubmit={submit} className="mt-8 flex flex-col gap-3 sm:flex-row">
           <label htmlFor="newsletter-email" className="sr-only">
             Email address

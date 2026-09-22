@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import {
-  ESSY_LUX_CONFIG,
   buildCartOrderMessage,
   buildSingleOrderMessage,
   formatPrice,
   openWhatsApp,
   type OrderLine,
 } from "@/lib/config";
+import { useSettings } from "@/hooks/use-settings";
+import { createOrderRequest } from "@/lib/queries/catalog";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   /** Single-product order: the color/quantity selectors stay editable. */
-  product?: { name: string; price: number; colors: string[] };
+  product?: { id?: string; name: string; price: number; colors: string[] };
   initialColor?: string;
   initialQuantity?: number;
   /** Cart order: fixed lines, no color/quantity editing. */
@@ -38,6 +39,8 @@ export function WhatsAppOrderModal({
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [ready, setReady] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { data: settings } = useSettings();
 
   useEffect(() => {
     if (!open) return;
@@ -61,7 +64,7 @@ export function WhatsAppOrderModal({
   if (!open) return null;
 
   const orderLines: OrderLine[] =
-    lines ?? (product ? [{ name: product.name, color, quantity, price: product.price }] : []);
+    lines ?? (product ? [{ name: product.name, color, quantity, price: product.price, productId: product.id }] : []);
   const total = orderLines.reduce((sum, l) => sum + l.price * l.quantity, 0);
 
   function validate(): boolean {
@@ -74,14 +77,49 @@ export function WhatsAppOrderModal({
     return Object.keys(next).length === 0;
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (!validate()) return;
+    setSubmitting(true);
     const customer = { name: name.trim(), phone: phone.trim(), location: location.trim(), note };
+    const messageSettings = settings
+      ? {
+          brand_name: settings.brand_name,
+          tagline: settings.tagline,
+          currency: settings.currency,
+          whatsapp_greeting: settings.whatsapp_greeting,
+          whatsapp_closing: settings.whatsapp_closing,
+        }
+      : undefined;
     const message =
       orderLines.length > 1
-        ? buildCartOrderMessage(orderLines, customer)
-        : buildSingleOrderMessage(orderLines[0], customer);
-    openWhatsApp(message);
+        ? buildCartOrderMessage(orderLines, customer, messageSettings)
+        : buildSingleOrderMessage(orderLines[0], customer, {
+            ...messageSettings,
+            orderMessageTemplate: settings?.order_message_template,
+          });
+
+    try {
+      await createOrderRequest({
+        customerName: customer.name,
+        customerPhone: customer.phone,
+        location: customer.location,
+        note: customer.note,
+        items: orderLines.map((l) => ({
+          productId: l.productId,
+          productName: l.name,
+          color: l.color,
+          quantity: l.quantity,
+          price: l.price,
+        })),
+      });
+    } catch (err) {
+      // The order request record is a courtesy log for the admin dashboard —
+      // WhatsApp is still the real order channel, so we don't block on this.
+      console.error("Could not save order request", err);
+    }
+
+    openWhatsApp(message, settings?.whatsapp_number);
+    setSubmitting(false);
     setReady(true);
   }
 
@@ -220,14 +258,19 @@ export function WhatsAppOrderModal({
 
           {ready && (
             <p className="border border-rose bg-rose/25 px-4 py-3 text-sm" role="status">
-              WhatsApp is ready with your order message. Please review it and press send so{" "}
-              {ESSY_LUX_CONFIG.brandName} receives your order.
+              ✓ Order request created. WhatsApp is now open with your message — please press{" "}
+              <strong>Send</strong> there so {settings?.brand_name ?? "Essy-Lux"} actually receives it.
             </p>
           )}
 
           <div className="flex flex-col gap-3 sm:flex-row-reverse">
-            <button type="button" onClick={handleContinue} className="btn-base btn-whatsapp flex-1">
-              💬 Continue to WhatsApp
+            <button
+              type="button"
+              onClick={handleContinue}
+              disabled={submitting}
+              className="btn-base btn-whatsapp flex-1"
+            >
+              {submitting ? "Preparing…" : "💬 Continue to WhatsApp"}
             </button>
             <button type="button" onClick={onClose} className="btn-base btn-outline flex-1">
               ← Edit order

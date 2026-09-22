@@ -6,10 +6,18 @@ import bannerRoses from "@/assets/banner-roses.jpg";
 import { Bloom, FloralCorner, FloralDivider, SectionHeading } from "@/components/Brand";
 import { ProductGrid } from "@/components/ProductCard";
 import { Newsletter } from "@/components/Newsletter";
-import { collections, products } from "@/data/products";
+import { fetchCollections, fetchHomepageContent, fetchPublishedProducts } from "@/lib/queries/catalog";
 import { ESSY_LUX_CONFIG } from "@/lib/config";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    const [products, collections, homepage] = await Promise.all([
+      fetchPublishedProducts(),
+      fetchCollections(),
+      fetchHomepageContent(),
+    ]);
+    return { products, collections, homepage };
+  },
   head: () => ({
     meta: [
       { title: "ESSY-LUX | Luxury Women's Handbags in Mombasa, Kenya" },
@@ -52,17 +60,41 @@ const whyEssyLux = [
   },
 ];
 
-/** Placeholder notes — replace with genuine customer reviews when available. */
-const testimonials = [
+/** Shown until the admin sets real testimonials in Admin → Homepage → Testimonials. */
+const DEFAULT_TESTIMONIALS = [
   { quote: "Beautiful, elegant and exactly what I was looking for.", author: "Customer" },
   { quote: "The finishing is lovely and it goes with everything I wear.", author: "Customer" },
   { quote: "Ordering on WhatsApp was so simple and the bag is gorgeous.", author: "Customer" },
 ];
 
 function Home() {
+  const { products, collections, homepage } = Route.useLoaderData();
   const featured = products.filter((p) => p.featured);
   const newArrivals = products.filter((p) => p.newArrival).slice(0, 4);
   const mostLoved = products.filter((p) => p.bestSeller).slice(0, 4);
+
+  const hero = homepage.hero;
+  const heroHeading = hero?.heading ?? "Luxury,\ncarried beautifully.";
+  const heroDescription =
+    hero?.description ??
+    "Discover elegant handbags designed to complement your style, confidence and everyday beauty.";
+  const heroButtonText = hero?.buttonText ?? "Shop the collection";
+  const heroImageSrc = hero?.imageUrl || heroImage;
+
+  const banner = homepage.banner;
+  const bannerHeading = banner?.heading ?? "Carry your confidence.";
+  const bannerSubtext = banner?.subtext ?? "Luxury is not only what you wear. It is how you carry yourself.";
+
+  const newsletterSection = homepage.newsletter;
+
+  const testimonialRows = homepage.testimonials
+    ? [1, 2, 3]
+        .map((i) => ({
+          quote: homepage.testimonials[`quote${i}`],
+          author: homepage.testimonials[`author${i}`],
+        }))
+        .filter((t) => t.quote?.trim())
+    : DEFAULT_TESTIMONIALS;
 
   return (
     <>
@@ -72,17 +104,15 @@ function Home() {
           <div className="rise max-w-xl">
             <Bloom className="h-5 w-5 text-champagne" />
             <p className="brand-mark mt-5 text-3xl sm:text-4xl">{ESSY_LUX_CONFIG.brandName}</p>
-            <h1 className="mt-6 font-display text-[clamp(2rem,6vw,3.5rem)] font-light uppercase leading-[1.08] tracking-[0.06em]">
-              Luxury,
-              <br />
-              carried beautifully.
+            <h1 className="mt-6 whitespace-pre-line font-display text-[clamp(2rem,6vw,3.5rem)] font-light uppercase leading-[1.08] tracking-[0.06em]">
+              {heroHeading}
             </h1>
             <p className="mt-7 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Discover elegant handbags designed to complement your style, confidence and everyday beauty.
+              {heroDescription}
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link to="/shop" className="btn-base btn-primary">
-                Shop the collection
+                {heroButtonText}
               </Link>
               <Link to="/new-arrivals" className="btn-base btn-outline">
                 Explore new arrivals
@@ -92,7 +122,7 @@ function Home() {
 
           <div className="fade-soft relative">
             <img
-              src={heroImage}
+              src={heroImageSrc}
               alt="Ivory Essy-Lux handbag with brown leather handles styled on cream silk with blush pink roses"
               width={1600}
               height={1200}
@@ -152,7 +182,7 @@ function Home() {
                   className="relative block overflow-hidden bg-cream"
                 >
                   <img
-                    src={c.image}
+                    src={c.cover_image_url ?? "/placeholder.svg"}
                     alt={c.name}
                     loading="lazy"
                     width={1024}
@@ -221,11 +251,9 @@ function Home() {
         <div className="absolute inset-0 bg-ivory/55" />
         <div className="shell relative py-24 text-center sm:py-32">
           <h2 id="confidence-title" className="section-title">
-            Carry your confidence.
+            {bannerHeading}
           </h2>
-          <p className="mx-auto mt-6 max-w-md font-display text-xl leading-relaxed">
-            Luxury is not only what you wear. It is how you carry yourself.
-          </p>
+          <p className="mx-auto mt-6 max-w-md font-display text-xl leading-relaxed">{bannerSubtext}</p>
           <Link to="/shop" className="btn-base btn-primary mt-9">
             Shop Essy-Lux
           </Link>
@@ -263,7 +291,7 @@ function Home() {
         <div className="shell">
           <SectionHeading eyebrow="Kind Words" title="Loved by our customers" />
           <div className="mt-14 grid gap-8 lg:grid-cols-3">
-            {testimonials.map((t) => (
+            {testimonialRows.map((t) => (
               <figure key={t.quote} className="border border-border bg-shell p-8">
                 <div className="flex gap-1 text-champagne" aria-hidden="true">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -277,9 +305,12 @@ function Home() {
               </figure>
             ))}
           </div>
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            These are placeholder notes shown as examples. Genuine customer reviews will replace them.
-          </p>
+          {testimonialRows === DEFAULT_TESTIMONIALS && (
+            <p className="mt-8 text-center text-xs text-muted-foreground">
+              These are placeholder notes shown as examples. Add genuine reviews from Admin → Homepage →
+              Testimonials.
+            </p>
+          )}
         </div>
       </section>
 
@@ -323,7 +354,7 @@ function Home() {
         </div>
       </section>
 
-      <Newsletter />
+      <Newsletter heading={newsletterSection?.heading} description={newsletterSection?.description} />
     </>
   );
 }

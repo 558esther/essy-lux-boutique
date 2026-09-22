@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { ProductGrid } from "@/components/ProductCard";
-import { allColors, allStyles, collections, products } from "@/data/products";
+import { fetchCategories, fetchCollections, fetchPublishedProducts } from "@/lib/queries/catalog";
 
 type Search = { q?: string; category?: string };
 
@@ -12,6 +12,14 @@ export const Route = createFileRoute("/shop")({
     q: typeof search.q === "string" ? search.q : undefined,
     category: typeof search.category === "string" ? search.category : undefined,
   }),
+  loader: async () => {
+    const [products, collections, categories] = await Promise.all([
+      fetchPublishedProducts(),
+      fetchCollections(),
+      fetchCategories(),
+    ]);
+    return { products, collections, categories };
+  },
   head: () => ({
     meta: [
       { title: "Shop Luxury Handbags | ESSY-LUX" },
@@ -38,6 +46,7 @@ const sortOptions = [
 ] as const;
 
 function Shop() {
+  const { products, collections, categories } = Route.useLoaderData();
   const { q, category: initialCategory } = Route.useSearch();
   const [category, setCategory] = useState(initialCategory ?? "all");
   const [color, setColor] = useState("all");
@@ -47,17 +56,26 @@ function Shop() {
   const [sort, setSort] = useState<(typeof sortOptions)[number]["value"]>("featured");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+  const allColors = useMemo(
+    () => Array.from(new Set(products.flatMap((p) => p.colors))).sort(),
+    [products],
+  );
+  const allStyles = useMemo(
+    () => Array.from(new Set(products.map((p) => p.categoryName))).sort(),
+    [products],
+  );
+
   const results = useMemo(() => {
     const query = q?.trim().toLowerCase() ?? "";
     let list = products.filter((p) => {
-      if (category !== "all" && p.category !== category) return false;
+      if (category !== "all" && !p.collectionSlugs.includes(category)) return false;
       if (color !== "all" && !p.colors.includes(color)) return false;
-      if (style !== "all" && p.style !== style) return false;
+      if (style !== "all" && p.categoryName !== style) return false;
       if (p.price > maxPrice) return false;
       if (inStockOnly && p.stock === 0) return false;
       if (
         query &&
-        !`${p.name} ${p.description} ${p.style} ${p.category} ${p.colors.join(" ")}`
+        !`${p.name} ${p.description} ${p.categoryName} ${p.colors.join(" ")}`
           .toLowerCase()
           .includes(query)
       )
@@ -73,7 +91,7 @@ function Shop() {
     });
 
     return list;
-  }, [q, category, color, style, maxPrice, inStockOnly, sort]);
+  }, [products, q, category, color, style, maxPrice, inStockOnly, sort]);
 
   return (
     <>

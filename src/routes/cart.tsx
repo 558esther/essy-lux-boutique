@@ -30,6 +30,7 @@ function Cart() {
     color: item.color,
     quantity: item.quantity,
     price: product.price,
+    productId: product.id,
   }));
 
   if (detailedCart.length === 0) {

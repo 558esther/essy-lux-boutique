@@ -1,13 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { ProductGrid } from "@/components/ProductCard";
-import { collections, products } from "@/data/products";
+import { fetchCollectionBySlug, fetchPublishedProducts } from "@/lib/queries/catalog";
 
 export const Route = createFileRoute("/collections/$slug")({
-  loader: ({ params }) => {
-    const collection = collections.find((c) => c.slug === params.slug);
+  loader: async ({ params }) => {
+    const collection = await fetchCollectionBySlug(params.slug);
     if (!collection) throw notFound();
-    return { collection };
+    const products = await fetchPublishedProducts();
+    return { collection, items: products.filter((p) => p.collectionSlugs.includes(collection.slug)) };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -15,12 +16,13 @@ export const Route = createFileRoute("/collections/$slug")({
     }
     const { collection } = loaderData;
     const title = `${collection.name} | ESSY-LUX`;
+    const description = collection.description ?? `Shop the ${collection.name} from ESSY-LUX.`;
     return {
       meta: [
         { title },
-        { name: "description", content: `${collection.description} Shop the ${collection.name} from ESSY-LUX.` },
+        { name: "description", content: `${description} Shop the ${collection.name} from ESSY-LUX.` },
         { property: "og:title", content: title },
-        { property: "og:description", content: collection.description },
+        { property: "og:description", content: description },
       ],
     };
   },
@@ -28,12 +30,11 @@ export const Route = createFileRoute("/collections/$slug")({
 });
 
 function CollectionPage() {
-  const { collection } = Route.useLoaderData();
-  const items = products.filter((p) => p.category === collection.slug);
+  const { collection, items } = Route.useLoaderData();
 
   return (
     <>
-      <PageHeader eyebrow="Collection" title={collection.name} intro={collection.description} />
+      <PageHeader eyebrow="Collection" title={collection.name} intro={collection.description ?? undefined} />
       <section className="shell py-16">
         {items.length > 0 ? (
           <ProductGrid products={items} />

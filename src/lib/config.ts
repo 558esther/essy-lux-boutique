@@ -1,3 +1,10 @@
+import type { StoreSettings } from "@/lib/types";
+
+/**
+ * Fallback values used until the `settings` table has loaded (or if it's
+ * ever unreachable). Once loaded, admin-configured values from Supabase take
+ * over everywhere via the optional `settings` parameter on the helpers below.
+ */
 export const ESSY_LUX_CONFIG = {
   brandName: "ESSY-LUX",
   tagline: "LUXURY BAGS",
@@ -14,16 +21,16 @@ export const ESSY_LUX_CONFIG = {
   },
 } as const;
 
-export function formatPrice(amount: number) {
-  return `${ESSY_LUX_CONFIG.currency} ${amount.toLocaleString("en-KE")}`;
+export function formatPrice(amount: number, currency: string = ESSY_LUX_CONFIG.currency) {
+  return `${currency} ${amount.toLocaleString("en-KE")}`;
 }
 
-export function whatsappUrl(message: string) {
-  return `https://wa.me/${ESSY_LUX_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+export function whatsappUrl(message: string, whatsappNumber: string = ESSY_LUX_CONFIG.whatsappNumber) {
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
-export function openWhatsApp(message: string) {
-  window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
+export function openWhatsApp(message: string, whatsappNumber?: string) {
+  window.open(whatsappUrl(message, whatsappNumber), "_blank", "noopener,noreferrer");
 }
 
 export type CustomerDetails = {
@@ -38,27 +45,65 @@ export type OrderLine = {
   color: string;
   quantity: number;
   price: number;
+  productId?: string;
 };
 
 const NUMBER_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
+type MessageSettings = Partial<
+  Pick<StoreSettings, "brand_name" | "tagline" | "currency" | "whatsapp_greeting" | "whatsapp_closing">
+>;
+
+/**
+ * Renders the admin-configured single-item order template (Settings → WhatsApp)
+ * by substituting {{variables}}. Falls back to a sensible default when the
+ * template is empty.
+ */
+export function renderOrderTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => vars[key] ?? "");
+}
+
 /** Single product order message. */
-export function buildSingleOrderMessage(line: OrderLine, customer: CustomerDetails) {
+export function buildSingleOrderMessage(
+  line: OrderLine,
+  customer: CustomerDetails,
+  settings?: MessageSettings & { orderMessageTemplate?: string },
+) {
+  const currency = settings?.currency ?? ESSY_LUX_CONFIG.currency;
   const total = line.price * line.quantity;
+  const brandName = settings?.brand_name ?? ESSY_LUX_CONFIG.brandName;
+  const tagline = settings?.tagline ?? ESSY_LUX_CONFIG.tagline;
+  const greeting = settings?.whatsapp_greeting ?? "Hello Essy-Lux! 💕";
+  const closing = settings?.whatsapp_closing ?? "Thank you for choosing ESSY-LUX. 🌷";
+
+  if (settings?.orderMessageTemplate) {
+    return renderOrderTemplate(settings.orderMessageTemplate, {
+      productName: line.name,
+      color: line.color,
+      quantity: String(line.quantity),
+      price: formatPrice(line.price, currency),
+      total: formatPrice(total, currency),
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      location: customer.location,
+      note: customer.note?.trim() ?? "",
+    });
+  }
+
   return [
-    "🌸✨ *ESSY-LUX ORDER REQUEST* ✨🌸",
+    `🌸✨ *${brandName} ORDER REQUEST* ✨🌸`,
     "",
-    "Hello Essy-Lux! 💕",
+    greeting,
     "",
     "I would like to order the following handbag:",
     "",
     `👜 *Product:* ${line.name}`,
     `🎨 *Color:* ${line.color}`,
     `🔢 *Quantity:* ${line.quantity}`,
-    `💰 *Price:* ${formatPrice(line.price)}${line.quantity > 1 ? " each" : ""}`,
+    `💰 *Price:* ${formatPrice(line.price, currency)}${line.quantity > 1 ? " each" : ""}`,
     "",
     "━━━━━━━━━━━━━━",
-    `🧾 *ORDER TOTAL: ${formatPrice(total)}*`,
+    `🧾 *ORDER TOTAL: ${formatPrice(total, currency)}*`,
     "━━━━━━━━━━━━━━",
     "",
     "👤 *Customer Details*",
@@ -70,20 +115,25 @@ export function buildSingleOrderMessage(line: OrderLine, customer: CustomerDetai
     "",
     "Please confirm availability and let me know the next steps for payment and delivery. 💕✨",
     "",
-    "Thank you! 🌷",
+    closing,
     "",
-    "*ESSY-LUX*",
-    "*LUXURY BAGS*",
+    `*${brandName}*`,
+    `*${tagline}*`,
   ].join("\n");
 }
 
 /** Multi-item cart order message. */
-export function buildCartOrderMessage(lines: OrderLine[], customer: CustomerDetails) {
+export function buildCartOrderMessage(lines: OrderLine[], customer: CustomerDetails, settings?: MessageSettings) {
+  const currency = settings?.currency ?? ESSY_LUX_CONFIG.currency;
+  const brandName = settings?.brand_name ?? ESSY_LUX_CONFIG.brandName;
+  const tagline = settings?.tagline ?? ESSY_LUX_CONFIG.tagline;
+  const greeting = settings?.whatsapp_greeting ?? "Hello Essy-Lux! 💕";
+  const closing = settings?.whatsapp_closing ?? "Thank you for choosing ESSY-LUX. 🌷";
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
   return [
-    "🌸✨ *ESSY-LUX — NEW ORDER REQUEST* ✨🌸",
+    `🌸✨ *${brandName} — NEW ORDER REQUEST* ✨🌸`,
     "",
-    "Hello Essy-Lux! 💕",
+    greeting,
     "",
     "I would like to place an order:",
     "",
@@ -93,15 +143,15 @@ export function buildCartOrderMessage(lines: OrderLine[], customer: CustomerDeta
       `${NUMBER_EMOJI[i] ?? `${i + 1}.`} *${l.name}*`,
       `🎨 Color: ${l.color}`,
       `🔢 Quantity: ${l.quantity}`,
-      `💰 Price: ${formatPrice(l.price)}${l.quantity > 1 ? " each" : ""}`,
+      `💰 Price: ${formatPrice(l.price, currency)}${l.quantity > 1 ? " each" : ""}`,
       "",
     ]),
     "━━━━━━━━━━━━━━━━",
     "🧾 *ORDER SUMMARY*",
     "",
-    `Subtotal: ${formatPrice(subtotal)}`,
+    `Subtotal: ${formatPrice(subtotal, currency)}`,
     "Delivery: To be confirmed",
-    `💰 *TOTAL: ${formatPrice(subtotal)}*`,
+    `💰 *TOTAL: ${formatPrice(subtotal, currency)}*`,
     "",
     "━━━━━━━━━━━━━━━━",
     "",
@@ -116,8 +166,8 @@ export function buildCartOrderMessage(lines: OrderLine[], customer: CustomerDeta
     "",
     "Thank you for choosing:",
     "",
-    "✨ *ESSY-LUX*",
-    "*LUXURY BAGS* ✨",
+    `✨ *${brandName}*`,
+    `*${tagline}* ✨`,
   ].join("\n");
 }
 

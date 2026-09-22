@@ -4,15 +4,17 @@ import { Heart } from "lucide-react";
 import { FloralDivider, SectionHeading } from "@/components/Brand";
 import { ProductGrid } from "@/components/ProductCard";
 import { WhatsAppOrderModal } from "@/components/WhatsAppOrderModal";
-import { getProduct, relatedProducts } from "@/data/products";
-import { ESSY_LUX_CONFIG, formatPrice } from "@/lib/config";
+import { fetchProductBySlug, fetchPublishedProducts, relatedProducts } from "@/lib/queries/catalog";
+import { useSettings } from "@/hooks/use-settings";
+import { formatPrice } from "@/lib/config";
 import { useShop } from "@/lib/store";
 
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
+  loader: async ({ params }) => {
+    const product = await fetchProductBySlug(params.slug);
     if (!product) throw notFound();
-    return { product };
+    const allProducts = await fetchPublishedProducts();
+    return { product, related: relatedProducts(allProducts, product) };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -33,7 +35,8 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { product, related } = Route.useLoaderData();
+  const { data: settings } = useSettings();
   const { addToCart, toggleWishlist, isWishlisted } = useShop();
   const [color, setColor] = useState(product.colors[0]);
   const [quantity, setQuantity] = useState(1);
@@ -194,15 +197,17 @@ function ProductPage() {
           </div>
 
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-            Prefer to order directly? Message {ESSY_LUX_CONFIG.brandName} on WhatsApp at{" "}
-            {ESSY_LUX_CONFIG.phone} — we&apos;ll prepare your order message, you simply press send.
+            Prefer to order directly? Message {settings?.brand_name ?? "ESSY-LUX"} on WhatsApp at{" "}
+            {settings?.phone ?? "0113835508"} — we&apos;ll prepare your order message, you simply press send.
           </p>
 
           <dl className="mt-12 divide-y divide-border border-y border-border">
             <Detail term="Description" detail={product.description} />
-            <Detail term="Details & material" detail={product.details} />
-            <Detail term="Dimensions" detail={product.dimensions} />
-            <Detail term="Care guide" detail={product.care} />
+            {product.material && <Detail term="Material" detail={product.material} />}
+            <Detail
+              term="Care guide"
+              detail="Keep away from damp surfaces and direct sunlight for long periods. Wipe gently with a soft dry cloth."
+            />
             <Detail
               term="Shipping & returns"
               detail="Delivery arrangements and any applicable fees are confirmed with you on WhatsApp before your order is finalised. For returns or exchanges, please contact Essy-Lux on WhatsApp."
@@ -216,14 +221,14 @@ function ProductPage() {
       <section className="shell py-16" aria-labelledby="related-title">
         <SectionHeading eyebrow="More to love" title="You may also like" />
         <div className="mt-14">
-          <ProductGrid products={relatedProducts(product)} />
+          <ProductGrid products={related} />
         </div>
       </section>
 
       <WhatsAppOrderModal
         open={orderOpen}
         onClose={() => setOrderOpen(false)}
-        product={{ name: product.name, price: product.price, colors: product.colors }}
+        product={{ id: product.id, name: product.name, price: product.price, colors: product.colors }}
         initialColor={color}
         initialQuantity={quantity}
       />

@@ -4,9 +4,9 @@ import { Heart } from "lucide-react";
 import { formatPrice } from "@/lib/config";
 import { useShop } from "@/lib/store";
 import { WhatsAppOrderModal } from "@/components/WhatsAppOrderModal";
-import type { Product } from "@/data/products";
+import type { StorefrontProduct } from "@/lib/types";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { product: StorefrontProduct }) {
   const { addToCart, toggleWishlist, isWishlisted } = useShop();
   const [color, setColor] = useState(product.colors[0]);
   const [added, setAdded] = useState(false);
@@ -100,7 +100,7 @@ export function ProductCard({ product }: { product: Product }) {
       <WhatsAppOrderModal
         open={orderOpen}
         onClose={() => setOrderOpen(false)}
-        product={{ name: product.name, price: product.price, colors: product.colors }}
+        product={{ id: product.id, name: product.name, price: product.price, colors: product.colors }}
         initialColor={color}
       />
     </article>
@@ -113,7 +113,7 @@ function Tag({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({ products }: { products: StorefrontProduct[] }) {
   return (
     <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
       {products.map((p) => (

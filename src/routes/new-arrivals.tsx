@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { ProductGrid } from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { fetchPublishedProducts } from "@/lib/queries/catalog";
 
 export const Route = createFileRoute("/new-arrivals")({
+  loader: async () => ({ products: await fetchPublishedProducts() }),
   head: () => ({
     meta: [
       { title: "New Arrivals | ESSY-LUX Luxury Bags" },
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/new-arrivals")({
 });
 
 function NewArrivals() {
+  const { products } = Route.useLoaderData();
   const arrivals = products.filter((p) => p.newArrival);
 
   return (

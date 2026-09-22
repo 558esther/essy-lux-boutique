@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { ProductGrid } from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { fetchPublishedProducts } from "@/lib/queries/catalog";
 import { useShop } from "@/lib/store";
 
 export const Route = createFileRoute("/wishlist")({
+  loader: async () => ({ products: await fetchPublishedProducts() }),
   head: () => ({
     meta: [
       { title: "Your Wishlist | ESSY-LUX" },
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/wishlist")({
 });
 
 function Wishlist() {
+  const { products } = Route.useLoaderData();
   const { wishlist } = useShop();
   const saved = products.filter((p) => wishlist.includes(p.id));
 

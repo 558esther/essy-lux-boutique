@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { collections, products } from "@/data/products";
+import { fetchCollections, fetchPublishedProducts } from "@/lib/queries/catalog";
 
 export const Route = createFileRoute("/collections/")({
+  loader: async () => {
+    const [collections, products] = await Promise.all([fetchCollections(), fetchPublishedProducts()]);
+    return { collections, products };
+  },
   head: () => ({
     meta: [
       { title: "The Collections | ESSY-LUX Luxury Bags" },
@@ -22,6 +26,7 @@ export const Route = createFileRoute("/collections/")({
 });
 
 function CollectionsIndex() {
+  const { collections, products } = Route.useLoaderData();
   return (
     <>
       <PageHeader
@@ -30,8 +35,13 @@ function CollectionsIndex() {
         intro="Four edits, each with its own mood — all of them unmistakably Essy-Lux."
       />
       <section className="shell space-y-20 py-16">
+        {collections.length === 0 && (
+          <p className="text-center text-sm text-muted-foreground">
+            Collections are being curated — check back soon.
+          </p>
+        )}
         {collections.map((c, i) => {
-          const count = products.filter((p) => p.category === c.slug).length;
+          const count = products.filter((p) => p.collectionSlugs.includes(c.slug)).length;
           return (
             <article
               key={c.slug}
@@ -46,7 +56,7 @@ function CollectionsIndex() {
                 aria-label={c.name}
               >
                 <img
-                  src={c.image}
+                  src={c.cover_image_url ?? "/placeholder.svg"}
                   alt={c.name}
                   loading="lazy"
                   width={1024}

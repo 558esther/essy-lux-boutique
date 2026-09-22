@@ -7,7 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { products, type Product } from "@/data/products";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPublishedProducts } from "@/lib/queries/catalog";
+import type { StorefrontProduct } from "@/lib/types";
 
 export type CartItem = {
   productId: string;
@@ -18,7 +20,7 @@ export type CartItem = {
 type ShopState = {
   cart: CartItem[];
   wishlist: string[];
-  addToCart: (product: Product, color: string, quantity?: number) => void;
+  addToCart: (product: StorefrontProduct, color: string, quantity?: number) => void;
   updateQuantity: (productId: string, color: string, quantity: number) => void;
   removeFromCart: (productId: string, color: string) => void;
   clearCart: () => void;
@@ -26,7 +28,7 @@ type ShopState = {
   isWishlisted: (productId: string) => boolean;
   cartCount: number;
   subtotal: number;
-  detailedCart: { item: CartItem; product: Product }[];
+  detailedCart: { item: CartItem; product: StorefrontProduct }[];
 };
 
 const ShopContext = createContext<ShopState | null>(null);
@@ -48,6 +50,11 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const { data: products = [] } = useQuery({
+    queryKey: ["catalog", "products"],
+    queryFn: fetchPublishedProducts,
+    staleTime: 30_000,
+  });
 
   useEffect(() => {
     setCart(read<CartItem[]>(CART_KEY, []));
@@ -63,7 +70,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     if (hydrated) window.localStorage.setItem(WISH_KEY, JSON.stringify(wishlist));
   }, [wishlist, hydrated]);
 
-  const addToCart = useCallback((product: Product, color: string, quantity = 1) => {
+  const addToCart = useCallback((product: StorefrontProduct, color: string, quantity = 1) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.productId === product.id && i.color === color);
       if (existing) {
@@ -102,7 +109,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ShopState>(() => {
     const detailedCart = cart
       .map((item) => ({ item, product: products.find((p) => p.id === item.productId) }))
-      .filter((entry): entry is { item: CartItem; product: Product } => Boolean(entry.product));
+      .filter((entry): entry is { item: CartItem; product: StorefrontProduct } => Boolean(entry.product));
 
     return {
       cart,
@@ -117,7 +124,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       subtotal: detailedCart.reduce((sum, e) => sum + e.product.price * e.item.quantity, 0),
       detailedCart,
     };
-  }, [cart, wishlist, addToCart, updateQuantity, removeFromCart, clearCart, toggleWishlist]);
+  }, [cart, wishlist, products, addToCart, updateQuantity, removeFromCart, clearCart, toggleWishlist]);
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
