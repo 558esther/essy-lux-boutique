@@ -84,6 +84,9 @@ function Home() {
   const banner = homepage.banner;
   const bannerHeading = banner?.heading ?? "Carry your confidence.";
   const bannerSubtext = banner?.subtext ?? "Luxury is not only what you wear. It is how you carry yourself.";
+  const bannerImageSrc = banner?.imageUrl || bannerRoses;
+
+  const storyImageSrc = homepage.story?.imageUrl || editorialWoman;
 
   const newsletterSection = homepage.newsletter;
 
@@ -139,7 +142,7 @@ function Home() {
         <FloralCorner className="pointer-events-none absolute -left-8 top-10 h-48 w-48 text-beige/60" />
         <div className="shell grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <img
-            src={editorialWoman}
+            src={storyImageSrc}
             alt="Woman in a cream dress holding a warm brown Essy-Lux handbag"
             loading="lazy"
             width={1200}
@@ -240,7 +243,7 @@ function Home() {
       {/* CARRY YOUR CONFIDENCE */}
       <section className="relative isolate overflow-hidden" aria-labelledby="confidence-title">
         <img
-          src={bannerRoses}
+          src={bannerImageSrc}
           alt=""
           aria-hidden="true"
           loading="lazy"

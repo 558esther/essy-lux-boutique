@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ImageUploader, type UploaderImage } from "@/components/admin/ImageUploader";
 import { getAllHomepageSections, saveHomepageSection } from "@/lib/queries/admin-homepage";
 import { uploadProductImage } from "@/lib/queries/admin-products";
+import { uploadImageFile } from "@/lib/queries/storage";
 
 export const Route = createFileRoute("/admin/homepage")({
   component: AdminHomepage,
@@ -35,9 +36,11 @@ function AdminHomepage() {
       </div>
 
       <Tabs defaultValue="hero">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="hero">Hero</TabsTrigger>
+          <TabsTrigger value="story">Our Woman</TabsTrigger>
           <TabsTrigger value="banner">Brand banner</TabsTrigger>
+          <TabsTrigger value="about">About page</TabsTrigger>
           <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
         </TabsList>
@@ -48,9 +51,21 @@ function AdminHomepage() {
             onSaved={() => queryClient.invalidateQueries({ queryKey: ["admin", "homepage"] })}
           />
         </TabsContent>
+        <TabsContent value="story">
+          <StoryEditor
+            initial={sections.story}
+            onSaved={() => queryClient.invalidateQueries({ queryKey: ["admin", "homepage"] })}
+          />
+        </TabsContent>
         <TabsContent value="banner">
           <BannerEditor
             initial={sections.banner}
+            onSaved={() => queryClient.invalidateQueries({ queryKey: ["admin", "homepage"] })}
+          />
+        </TabsContent>
+        <TabsContent value="about">
+          <AboutPageEditor
+            initial={sections.about}
             onSaved={() => queryClient.invalidateQueries({ queryKey: ["admin", "homepage"] })}
           />
         </TabsContent>
@@ -145,12 +160,13 @@ function BannerEditor({ initial, onSaved }: { initial?: Record<string, string>; 
   const [subtext, setSubtext] = useState(
     initial?.subtext ?? "Luxury is not only what you wear. It is how you carry yourself.",
   );
+  const [image, setImage] = useState<UploaderImage[]>(initial?.imageUrl ? [{ url: initial.imageUrl }] : []);
   const [saving, setSaving] = useState(false);
 
   async function save() {
     setSaving(true);
     try {
-      await saveHomepageSection("banner", { heading, subtext });
+      await saveHomepageSection("banner", { heading, subtext, imageUrl: image[0]?.url ?? "" });
       toast.success("Brand banner updated.");
       onSaved();
     } finally {
@@ -168,8 +184,107 @@ function BannerEditor({ initial, onSaved }: { initial?: Record<string, string>; 
         <FieldLabel>Banner subtext</FieldLabel>
         <Textarea value={subtext} onChange={(e) => setSubtext(e.target.value)} rows={2} />
       </div>
+      <div>
+        <FieldLabel>Background image</FieldLabel>
+        <ImageUploader
+          images={image}
+          uploadFn={(file) => uploadImageFile(file, "homepage")}
+          onAdd={(urls) => setImage(urls.slice(-1).map((url) => ({ url })))}
+          onRemove={() => setImage([])}
+          onSetMain={() => {}}
+        />
+      </div>
       <Button onClick={save} disabled={saving}>
         {saving ? "Saving…" : "Save banner"}
+      </Button>
+    </SectionCard>
+  );
+}
+
+function StoryEditor({ initial, onSaved }: { initial?: Record<string, string>; onSaved: () => void }) {
+  const [image, setImage] = useState<UploaderImage[]>(initial?.imageUrl ? [{ url: initial.imageUrl }] : []);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await saveHomepageSection("story", { imageUrl: image[0]?.url ?? "" });
+      toast.success("“The Essy-Lux Woman” image updated.");
+      onSaved();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <SectionCard>
+      <p className="text-xs text-muted-foreground">
+        This is the photo shown in the &ldquo;The Essy-Lux Woman&rdquo; section of the homepage.
+      </p>
+      <div>
+        <FieldLabel>Photo</FieldLabel>
+        <ImageUploader
+          images={image}
+          uploadFn={(file) => uploadImageFile(file, "homepage")}
+          onAdd={(urls) => setImage(urls.slice(-1).map((url) => ({ url })))}
+          onRemove={() => setImage([])}
+          onSetMain={() => {}}
+        />
+      </div>
+      <Button onClick={save} disabled={saving}>
+        {saving ? "Saving…" : "Save photo"}
+      </Button>
+    </SectionCard>
+  );
+}
+
+function AboutPageEditor({ initial, onSaved }: { initial?: Record<string, string>; onSaved: () => void }) {
+  const [storyImage, setStoryImage] = useState<UploaderImage[]>(
+    initial?.storyImageUrl ? [{ url: initial.storyImageUrl }] : [],
+  );
+  const [visionImage, setVisionImage] = useState<UploaderImage[]>(
+    initial?.visionImageUrl ? [{ url: initial.visionImageUrl }] : [],
+  );
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await saveHomepageSection("about", {
+        storyImageUrl: storyImage[0]?.url ?? "",
+        visionImageUrl: visionImage[0]?.url ?? "",
+      });
+      toast.success("About page images updated.");
+      onSaved();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <SectionCard>
+      <div>
+        <FieldLabel>&ldquo;Our story&rdquo; photo</FieldLabel>
+        <ImageUploader
+          images={storyImage}
+          uploadFn={(file) => uploadImageFile(file, "homepage")}
+          onAdd={(urls) => setStoryImage(urls.slice(-1).map((url) => ({ url })))}
+          onRemove={() => setStoryImage([])}
+          onSetMain={() => {}}
+        />
+      </div>
+      <div>
+        <FieldLabel>&ldquo;Our vision&rdquo; photo</FieldLabel>
+        <ImageUploader
+          images={visionImage}
+          uploadFn={(file) => uploadImageFile(file, "homepage")}
+          onAdd={(urls) => setVisionImage(urls.slice(-1).map((url) => ({ url })))}
+          onRemove={() => setVisionImage([])}
+          onSetMain={() => {}}
+        />
+      </div>
+      <Button onClick={save} disabled={saving}>
+        {saving ? "Saving…" : "Save About page images"}
       </Button>
     </SectionCard>
   );

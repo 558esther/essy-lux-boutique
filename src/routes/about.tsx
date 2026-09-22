@@ -4,8 +4,10 @@ import classicTote from "@/assets/bag-classic-tote.jpg";
 import { FloralCorner, FloralDivider } from "@/components/Brand";
 import { PageHeader } from "@/components/PageHeader";
 import { ESSY_LUX_CONFIG } from "@/lib/config";
+import { fetchHomepageContent } from "@/lib/queries/catalog";
 
 export const Route = createFileRoute("/about")({
+  loader: async () => ({ about: (await fetchHomepageContent()).about }),
   head: () => ({
     meta: [
       { title: "Our Story | ESSY-LUX Luxury Bags" },
@@ -25,6 +27,10 @@ export const Route = createFileRoute("/about")({
 });
 
 function About() {
+  const { about } = Route.useLoaderData();
+  const storyImageSrc = about?.storyImageUrl || editorialWoman;
+  const visionImageSrc = about?.visionImageUrl || classicTote;
+
   return (
     <>
       <PageHeader
@@ -37,7 +43,7 @@ function About() {
         <FloralCorner className="pointer-events-none absolute -right-8 top-8 h-48 w-48 rotate-90 text-beige/60" />
         <div className="shell grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <img
-            src={editorialWoman}
+            src={storyImageSrc}
             alt="Woman holding a warm brown Essy-Lux handbag"
             loading="lazy"
             width={1200}
@@ -74,7 +80,7 @@ function About() {
             </Link>
           </div>
           <img
-            src={classicTote}
+            src={visionImageSrc}
             alt="Ivory Essy-Lux tote with brown leather handles"
             loading="lazy"
             width={1024}

@@ -17,6 +17,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { ImageUploader, type UploaderImage } from "@/components/admin/ImageUploader";
 import {
   createCategory,
   deleteCategory,
@@ -24,6 +25,7 @@ import {
   updateCategory,
   type CategoryInput,
 } from "@/lib/queries/admin-categories";
+import { uploadImageFile } from "@/lib/queries/storage";
 import type { Category } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/categories")({
@@ -41,6 +43,7 @@ function AdminCategories() {
   const [editing, setEditing] = useState<Category | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<CategoryInput>(EMPTY);
+  const [image, setImage] = useState<UploaderImage[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -51,6 +54,7 @@ function AdminCategories() {
   function openNew() {
     setEditing(null);
     setForm(EMPTY);
+    setImage([]);
     setDialogOpen(true);
   }
 
@@ -63,6 +67,7 @@ function AdminCategories() {
       active: c.active,
       display_order: c.display_order,
     });
+    setImage(c.image_url ? [{ url: c.image_url }] : []);
     setDialogOpen(true);
   }
 
@@ -73,11 +78,12 @@ function AdminCategories() {
     }
     setSaving(true);
     try {
+      const input = { ...form, image_url: image[0]?.url ?? null };
       if (editing) {
-        await updateCategory(editing.id, form);
+        await updateCategory(editing.id, input);
         toast.success("Category updated.");
       } else {
-        await createCategory(form);
+        await createCategory(input);
         toast.success("Category added.");
       }
       setDialogOpen(false);
@@ -123,6 +129,16 @@ function AdminCategories() {
                   rows={3}
                 />
               </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Category image</label>
+                <ImageUploader
+                  images={image}
+                  uploadFn={(file) => uploadImageFile(file, "categories")}
+                  onAdd={(urls) => setImage(urls.slice(-1).map((url) => ({ url })))}
+                  onRemove={() => setImage([])}
+                  onSetMain={() => {}}
+                />
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Active</span>
                 <Switch checked={form.active} onCheckedChange={(v) => setForm({ ...form, active: v })} />
@@ -144,6 +160,7 @@ function AdminCategories() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Slug</TableHead>
               <TableHead>Status</TableHead>
@@ -153,13 +170,20 @@ function AdminCategories() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                   Loading…
                 </TableCell>
               </TableRow>
             )}
             {categories.map((c) => (
               <TableRow key={c.id}>
+                <TableCell>
+                  <img
+                    src={c.image_url ?? "/placeholder.svg"}
+                    alt=""
+                    className="h-10 w-10 rounded object-cover"
+                  />
+                </TableCell>
                 <TableCell className="font-medium">{c.name}</TableCell>
                 <TableCell className="text-muted-foreground">{c.slug}</TableCell>
                 <TableCell>
