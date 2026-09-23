@@ -44,7 +44,7 @@ export function ProductCard({ product }: { product: StorefrontProduct }) {
           onClick={() => toggleWishlist(product.id)}
           aria-label={wished ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
           aria-pressed={wished}
-          className="absolute right-3 top-3 grid h-9 w-9 place-items-center bg-shell/85 backdrop-blur transition-transform hover:scale-110"
+          className="absolute right-3 top-3 grid h-10 w-10 place-items-center bg-shell/85 backdrop-blur transition-transform hover:scale-110"
         >
           <Heart
             className={`h-4 w-4 transition-colors ${wished ? "fill-rose-deep text-rose-deep" : "text-foreground"}`}
@@ -69,7 +69,7 @@ export function ProductCard({ product }: { product: StorefrontProduct }) {
               type="button"
               onClick={() => setColor(c)}
               aria-pressed={color === c}
-              className={`border px-3 py-1.5 text-[0.625rem] font-medium spaced transition-colors ${
+              className={`min-h-10 border px-3 py-1.5 text-[0.625rem] font-medium spaced transition-colors ${
                 color === c ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground"
               }`}
             >

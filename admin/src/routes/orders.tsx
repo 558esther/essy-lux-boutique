@@ -59,7 +59,7 @@ function AdminOrders() {
         </Select>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-shell">
+      <div className="hidden overflow-hidden rounded-lg border border-border bg-shell md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -121,6 +121,48 @@ function AdminOrders() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {!isLoading && orders.length === 0 && (
+          <p className="rounded-lg border border-border bg-shell py-8 text-center text-sm text-muted-foreground">No order requests yet.</p>
+        )}
+        {isLoading && <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>}
+        {orders.map((o) => (
+          <div key={o.id} className="rounded-lg border border-border bg-shell p-3 text-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-medium">{o.customer_name}</p>
+                <a href={`tel:${o.customer_phone}`} className="inline-block py-1 text-xs text-primary underline">
+                  {o.customer_phone}
+                </a>
+              </div>
+              <p className="shrink-0 font-medium">{formatPrice(o.total)}</p>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {o.items.map((i) => `${i.product_name} (${i.color ?? "—"}) ×${i.quantity}`).join(", ")}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {o.location ?? "—"} · {new Date(o.created_at).toLocaleDateString()}
+            </p>
+            <div className="mt-3">
+              <Select value={o.status} onValueChange={(v) => handleStatusChange(o.id, v as OrderStatus)}>
+                <SelectTrigger className="h-10 w-full text-xs">
+                  <SelectValue>
+                    <OrderStatusBadge status={o.status} />
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

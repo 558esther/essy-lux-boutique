@@ -78,7 +78,7 @@ function AdminDashboard() {
                 key={p.id}
                 to="/products/$productId"
                 params={{ productId: p.id }}
-                className="flex items-center justify-between text-sm hover:underline"
+                className="flex items-center justify-between py-1.5 text-sm hover:underline"
               >
                 <span>{p.name}</span>
                 <span className="text-muted-foreground">{p.stock_quantity} left</span>
@@ -101,7 +101,7 @@ function AdminDashboard() {
                 key={p.id}
                 to="/products/$productId"
                 params={{ productId: p.id }}
-                className="flex items-center justify-between text-sm hover:underline"
+                className="flex items-center justify-between py-1.5 text-sm hover:underline"
               >
                 <span>{p.name}</span>
                 <span className="text-muted-foreground">0 left</span>

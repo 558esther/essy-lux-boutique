@@ -13,6 +13,7 @@ export function ImageUploader({
   onSetMain,
   uploadFn,
   disabled,
+  label = "Photos",
 }: {
   images: UploaderImage[];
   onAdd: (urls: string[]) => void;
@@ -20,6 +21,7 @@ export function ImageUploader({
   onSetMain: (image: UploaderImage, index: number) => void;
   uploadFn: (file: File) => Promise<string>;
   disabled?: boolean;
+  label?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -66,10 +68,13 @@ export function ImageUploader({
         } ${disabled || uploading ? "pointer-events-none opacity-60" : ""}`}
       >
         <ImagePlus className="mx-auto h-8 w-8 text-muted-foreground" strokeWidth={1.5} />
-        <p className="mt-3 text-sm font-medium">📷 Product Images</p>
+        <p className="mt-3 text-sm font-medium">📷 {label}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          {uploading ? "Uploading…" : "Drag and drop images here or click to browse."}
+          {uploading ? "Uploading…" : "Tap to choose photos from your device, or drag and drop them here."}
         </p>
+        <span className="mt-3 inline-flex h-10 items-center rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm">
+          Choose photos
+        </span>
         <p className="mt-1 text-[0.7rem] text-muted-foreground">JPG, JPEG, PNG or WEBP</p>
         <input
           ref={inputRef}
@@ -95,12 +100,12 @@ export function ImageUploader({
                   Main
                 </span>
               )}
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 p-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 p-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                 {i !== 0 && (
                   <button
                     type="button"
                     onClick={() => onSetMain(img, i)}
-                    className="rounded px-1.5 py-1 text-[0.625rem] font-medium text-white hover:bg-white/20"
+                    className="rounded px-2 py-2 text-[0.6875rem] font-medium text-white hover:bg-white/20"
                   >
                     Set main
                   </button>
@@ -108,7 +113,7 @@ export function ImageUploader({
                 <button
                   type="button"
                   onClick={() => onRemove(img, i)}
-                  className="ml-auto rounded p-1 text-white hover:bg-white/20"
+                  className="ml-auto rounded p-2 text-white hover:bg-white/20"
                   aria-label="Remove image"
                 >
                   <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />

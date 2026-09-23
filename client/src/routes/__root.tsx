@@ -14,7 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="max-w-md text-center">
+      <div className="w-full max-w-md text-center">
         <p className="eyebrow">404</p>
         <h1 className="section-title mt-4">This page isn&apos;t here</h1>
         <p className="mt-4 text-sm text-muted-foreground">
@@ -36,7 +36,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="max-w-md text-center">
+      <div className="w-full max-w-md text-center">
         <h1 className="section-title">This page didn&apos;t load</h1>
         <p className="mt-4 text-sm text-muted-foreground">
           Something went wrong on our end. You can try again or head back home.

@@ -132,7 +132,7 @@ function AdminProductsList() {
           />
         </div>
         <Select value={filter} onValueChange={(v) => setFilter(v as FilterKey)}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -147,7 +147,7 @@ function AdminProductsList() {
           </SelectContent>
         </Select>
         <Select value={categoryId} onValueChange={setCategoryId}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -160,7 +160,7 @@ function AdminProductsList() {
           </SelectContent>
         </Select>
         <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -173,7 +173,7 @@ function AdminProductsList() {
         </Select>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-shell">
+      <div className="hidden overflow-hidden rounded-lg border border-border bg-shell md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -254,6 +254,59 @@ function AdminProductsList() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {!isLoading && results.length === 0 && (
+          <p className="rounded-lg border border-border bg-shell py-8 text-center text-sm text-muted-foreground">No products match these filters yet.</p>
+        )}
+        {isLoading && <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>}
+        {results.map((p) => (
+          <div key={p.id} className="rounded-lg border border-border bg-shell p-3">
+            <div className="flex gap-3">
+              <img src={p.images[0]?.url ?? "/placeholder.svg"} alt="" className="h-20 w-16 shrink-0 rounded object-cover" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{p.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {p.category?.name ?? "—"}
+                  {p.sku ? ` · ${p.sku}` : ""}
+                </p>
+                <p className="mt-1 text-sm">{formatPrice(p.price)}</p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  <ProductStatusBadge status={p.stock_quantity === 0 ? "out_of_stock" : p.status} />
+                  <span className={`text-xs ${p.stock_quantity === 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                    Stock: {p.stock_quantity}
+                  </span>
+                </div>
+                {(p.featured || p.new_arrival) && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {[p.featured && "Featured", p.new_arrival && "New"].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button asChild variant="outline" className="h-10">
+                <Link to="/products/$productId" params={{ productId: p.id }}>
+                  Edit
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-10">
+                <a href={storefrontProductUrl(p.slug)} target="_blank" rel="noopener noreferrer">
+                  View
+                </a>
+              </Button>
+              {p.status !== "archived" && (
+                <Button variant="outline" className="h-10" onClick={() => setArchiveTarget(p)}>
+                  Archive
+                </Button>
+              )}
+              <Button variant="outline" className="h-10 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(p)}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <ConfirmDialog

@@ -32,7 +32,7 @@ export function TagInput({
               type="button"
               onClick={() => onChange(values.filter((x) => x !== v))}
               aria-label={`Remove ${v}`}
-              className="hover:text-destructive"
+              className="-mr-1 p-1.5 hover:text-destructive"
             >
               <X className="h-3 w-3" />
             </button>

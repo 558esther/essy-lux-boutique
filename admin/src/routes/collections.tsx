@@ -190,7 +190,7 @@ function AdminCollections() {
         </Dialog>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-shell">
+      <div className="hidden overflow-hidden rounded-lg border border-border bg-shell md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -240,6 +240,33 @@ function AdminCollections() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {!isLoading && collections.length === 0 && (
+          <p className="rounded-lg border border-border bg-shell py-8 text-center text-sm text-muted-foreground">No collections yet.</p>
+        )}
+        {isLoading && <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>}
+        {collections.map((c) => (
+          <div key={c.id} className="rounded-lg border border-border bg-shell p-3">
+            <div className="flex items-center gap-3">
+              <img src={c.cover_image_url ?? "/placeholder.svg"} alt="" className="h-14 w-16 shrink-0 rounded object-cover" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{c.name}</p>
+                <p className="text-xs text-muted-foreground">{c.productCount} products</p>
+              </div>
+              <Badge variant={c.active ? "default" : "secondary"}>{c.active ? "Active" : "Inactive"}</Badge>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button variant="outline" className="h-10" onClick={() => openEdit(c)}>
+                Edit
+              </Button>
+              <Button variant="outline" className="h-10 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(c)}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <ConfirmDialog

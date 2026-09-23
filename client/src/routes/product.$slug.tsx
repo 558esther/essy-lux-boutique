@@ -130,7 +130,7 @@ function ProductPage() {
                   type="button"
                   onClick={() => selectColor(c)}
                   aria-pressed={color === c}
-                  className={`border px-4 py-2 text-[0.625rem] font-medium spaced transition-colors ${
+                  className={`min-h-10 border px-4 py-2 text-[0.625rem] font-medium spaced transition-colors ${
                     color === c
                       ? "border-foreground bg-foreground text-background"
                       : "border-border hover:border-foreground"
@@ -168,7 +168,7 @@ function ProductPage() {
               type="button"
               onClick={() => toggleWishlist(product.id)}
               aria-pressed={wished}
-              className="inline-flex items-center gap-2 text-[0.625rem] font-medium spaced hover:text-rose-deep"
+              className="inline-flex min-h-10 items-center gap-2 text-[0.625rem] font-medium spaced hover:text-rose-deep"
             >
               <Heart
                 className={`h-4 w-4 ${wished ? "fill-rose-deep text-rose-deep" : ""}`}

@@ -143,18 +143,18 @@ export function Header() {
             </div>
             <nav className="mt-10 flex flex-col gap-6" aria-label="Mobile">
               {NAV.map((item) => (
-                <Link key={item.to} to={item.to} className="nav-link text-xs">
+                <Link key={item.to} to={item.to} className="nav-link py-2 text-xs">
                   {item.label}
                 </Link>
               ))}
               <span className="h-px bg-border" />
-              <Link to="/wishlist" className="nav-link text-xs">
+              <Link to="/wishlist" className="nav-link py-2 text-xs">
                 Wishlist
               </Link>
-              <Link to="/cart" className="nav-link text-xs">
+              <Link to="/cart" className="nav-link py-2 text-xs">
                 Shopping Bag
               </Link>
-              <Link to="/faq" className="nav-link text-xs">
+              <Link to="/faq" className="nav-link py-2 text-xs">
                 FAQ
               </Link>
             </nav>

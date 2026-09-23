@@ -22,7 +22,7 @@ function AdminCustomers() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-shell">
+      <div className="hidden overflow-hidden rounded-lg border border-border bg-shell md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -61,6 +61,26 @@ function AdminCustomers() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {!isLoading && customers.length === 0 && (
+          <p className="rounded-lg border border-border bg-shell py-8 text-center text-sm text-muted-foreground">No customers yet — they appear here after their first order request.</p>
+        )}
+        {isLoading && <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>}
+        {customers.map((c) => (
+          <div key={c.id} className="rounded-lg border border-border bg-shell p-3 text-sm">
+            <p className="font-medium">{c.name}</p>
+            <a href={`tel:${c.phone}`} className="inline-block py-1 text-xs text-primary underline">
+              {c.phone}
+            </a>
+            <p className="mt-1 text-xs text-muted-foreground">{c.location ?? "—"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {c.orderCount} {c.orderCount === 1 ? "order" : "orders"} · last:{" "}
+              {c.lastOrderAt ? new Date(c.lastOrderAt).toLocaleDateString() : "—"}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

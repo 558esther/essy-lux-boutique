@@ -83,7 +83,7 @@ function AdminMedia() {
               <button
                 type="button"
                 onClick={() => setDeleteTarget(m)}
-                className="absolute right-1.5 top-1.5 rounded bg-black/55 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute right-1.5 top-1.5 rounded bg-black/55 p-2 text-white opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100"
                 aria-label="Delete image"
               >
                 <Trash2 className="h-3.5 w-3.5" />

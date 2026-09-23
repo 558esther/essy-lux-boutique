@@ -254,6 +254,7 @@ export function ProductForm({
 
         <Section title="Product images" error={errors.images}>
           <ImageUploader
+            label="Product images"
             images={images}
             uploadFn={uploadProductImage}
             onAdd={(urls) => setImages((prev) => [...prev, ...urls.map((url) => ({ url }))])}

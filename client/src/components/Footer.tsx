@@ -37,7 +37,7 @@ export function Footer() {
             </p>
             <p className="flex items-start gap-2.5">
               <Phone className="mt-0.5 h-4 w-4 shrink-0 text-champagne" strokeWidth={1.4} />
-              <a href={`tel:${ESSY_LUX_CONFIG.phone}`} className="hover:text-champagne">
+              <a href={`tel:${ESSY_LUX_CONFIG.phone}`} className="inline-block py-1.5 hover:text-champagne">
                 {ESSY_LUX_CONFIG.phone}
               </a>
             </p>
@@ -47,7 +47,7 @@ export function Footer() {
         <FooterColumn title="Explore">
           {shopLinks.map((l) => (
             <li key={l.label}>
-              <Link to={l.to} className="transition-colors hover:text-champagne">
+              <Link to={l.to} className="inline-block py-1.5 transition-colors hover:text-champagne">
                 {l.label}
               </Link>
             </li>
@@ -57,13 +57,13 @@ export function Footer() {
         <FooterColumn title="Customer Care">
           {careLinks.map((l) => (
             <li key={l.label}>
-              <Link to={l.to} className="transition-colors hover:text-champagne">
+              <Link to={l.to} className="inline-block py-1.5 transition-colors hover:text-champagne">
                 {l.label}
               </Link>
             </li>
           ))}
           <li>
-            <Link to="/checkout" className="transition-colors hover:text-champagne">
+            <Link to="/checkout" className="inline-block py-1.5 transition-colors hover:text-champagne">
               Order Review
             </Link>
           </li>
@@ -95,10 +95,10 @@ export function Footer() {
         <div className="shell flex flex-col gap-3 py-6 text-[0.6875rem] text-background/60 sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 {ESSY_LUX_CONFIG.brandName}. All Rights Reserved.</p>
           <div className="flex gap-5">
-            <Link to="/privacy-policy" className="hover:text-champagne">
+            <Link to="/privacy-policy" className="inline-block py-1.5 hover:text-champagne">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="hover:text-champagne">
+            <Link to="/terms" className="inline-block py-1.5 hover:text-champagne">
               Terms &amp; Conditions
             </Link>
           </div>

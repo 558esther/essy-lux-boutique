@@ -110,6 +110,14 @@ export function AdminShell({ children, title }: { children: ReactNode; title?: s
           <div className="flex h-[calc(100%-5rem)] flex-col justify-between px-4 py-4">
             <NavLinks onNavigate={() => setMobileOpen(false)} />
             <div className="border-t border-border pt-4">
+              <a
+                href={STOREFRONT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-1 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground/80 hover:bg-secondary hover:text-foreground"
+              >
+                View shop ↗
+              </a>
               <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
               <button
                 type="button"
