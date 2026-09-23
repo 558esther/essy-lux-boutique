@@ -1,0 +1,312 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+/*
+ * ESSY-LUX design system.
+ * Ivory / cream dominant, warm brown typography, blush accents, sparing champagne.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ivory: var(--ivory);
+  --color-cream: var(--cream);
+  --color-shell: var(--shell);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-blush: var(--blush);
+  --color-rose: var(--rose);
+  --color-rose-deep: var(--rose-deep);
+  --color-champagne: var(--champagne);
+  --color-beige: var(--beige);
+  --color-chocolate: var(--chocolate);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+}
+
+:root {
+  --radius: 0.25rem;
+  --background: oklch(0.963 0.017 84.6); /* #F7F1E8 */
+  --foreground: oklch(0.322 0.043 40.5); /* #5A382B */
+  --ivory: oklch(0.955 0.019 82.9); /* #F5EDE2 */
+  --cream: oklch(0.925 0.025 78.6); /* #EFE4D6 */
+  --shell: oklch(0.994 0.004 60); /* #FFFDFC */
+  --card: oklch(0.994 0.004 60);
+  --card-foreground: oklch(0.322 0.043 40.5);
+  --primary: oklch(0.322 0.043 40.5);
+  --primary-foreground: oklch(0.963 0.017 84.6);
+  --secondary: oklch(0.925 0.025 78.6);
+  --secondary-foreground: oklch(0.322 0.043 40.5);
+  --muted: oklch(0.941 0.012 80);
+  --muted-foreground: oklch(0.52 0.035 45);
+  --accent: oklch(0.876 0.055 3.5); /* #F3C7D0 */
+  --accent-foreground: oklch(0.322 0.043 40.5);
+  --blush: oklch(0.792 0.079 2.6); /* #E8A8B8 */
+  --rose: oklch(0.876 0.055 3.5);
+  --rose-deep: oklch(0.658 0.084 5.2); /* #C98294 */
+  --champagne: oklch(0.745 0.077 79.5); /* #C9A66B */
+  --beige: oklch(0.836 0.032 73.8); /* #D8C6B3 */
+  --chocolate: oklch(0.256 0.038 40); /* #3A241D */
+  --border: oklch(0.885 0.022 76);
+  --input: oklch(0.885 0.022 76);
+  --ring: oklch(0.745 0.077 79.5);
+  --destructive: oklch(0.55 0.16 25);
+  --destructive-foreground: oklch(0.994 0.004 60);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  ::selection {
+    background: var(--color-rose);
+    color: var(--color-chocolate);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-rose-deep);
+    outline-offset: 3px;
+  }
+}
+
+/* --- Typography utilities --- */
+
+@utility brand-mark {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-rose-deep);
+}
+
+@utility section-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3.6vw, 2.5rem);
+  line-height: 1.15;
+}
+
+@utility spaced {
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+}
+
+/* --- Buttons --- */
+
+@utility btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.875rem 2rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+  cursor: pointer;
+  &:hover {
+    transform: translateY(-2px);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@utility btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  &:hover {
+    background-color: var(--color-chocolate);
+  }
+}
+
+@utility btn-outline {
+  background-color: transparent;
+  color: var(--color-foreground);
+  border-color: var(--color-foreground);
+  &:hover {
+    background-color: var(--color-foreground);
+    color: var(--color-primary-foreground);
+  }
+}
+
+@utility btn-whatsapp {
+  background-color: var(--color-rose-deep);
+  color: var(--color-shell);
+  &:hover {
+    background-color: oklch(0.6 0.09 5.2);
+  }
+}
+
+@utility btn-soft {
+  background-color: var(--color-cream);
+  color: var(--color-foreground);
+  border-color: var(--color-border);
+  &:hover {
+    background-color: var(--color-rose);
+  }
+}
+
+/* --- Layout --- */
+
+@utility shell {
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media (min-width: 768px) {
+    padding-inline: 2.5rem;
+  }
+}
+
+@utility nav-link {
+  position: relative;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding-block: 0.25rem;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 1px;
+    width: 0;
+    background: var(--color-rose-deep);
+    transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  &:hover::after,
+  &[data-status="active"]::after {
+    width: 100%;
+  }
+}
+
+@utility field {
+  width: 100%;
+  background: var(--color-shell);
+  border: 1px solid var(--color-input);
+  padding: 0.8125rem 1rem;
+  font-size: 0.9375rem;
+  color: var(--color-foreground);
+  transition: border-color 0.25s ease;
+  &::placeholder {
+    color: var(--color-muted-foreground);
+    opacity: 0.7;
+  }
+  &:focus {
+    border-color: var(--color-rose-deep);
+    outline: none;
+  }
+}
+
+/* --- Motion --- */
+
+@utility rise {
+  animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility fade-soft {
+  animation: fade-soft 1.2s ease both;
+}
+
+@utility sway {
+  animation: sway 9s ease-in-out infinite;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-soft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

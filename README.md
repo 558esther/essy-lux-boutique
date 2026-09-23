@@ -2373,26 +2373,44 @@ The customer should be able to discover a bag, choose it, provide their details 
 Make ESSY-LUX feel like a REAL, beautiful, trustworthy and premium handbag business.
 ```
 
-## Development
+## Architecture
 
-You need Node.js 20+ (or Bun).
+This repository holds **two completely standalone applications**, each with
+its own `package.json`, its own `npm install`, and its own `npm run build` —
+neither depends on the other at build time, and there is no shared
+monorepo tooling (no workspaces, no Blueprint, nothing "clever"):
+
+| Folder | What it is | Deployed as |
+| --- | --- | --- |
+| [`client/`](client/README.md) | The customer-facing ESSY-LUX storefront — shop, product pages, cart, checkout, WhatsApp ordering | Its own static site, its own domain |
+| [`admin/`](admin/README.md) | The ESSY-LUX Admin Dashboard — products, categories, collections, orders, homepage content, settings | A **separate** static site, its own domain (e.g. `admin.essylux.com`) |
+| [`supabase/`](supabase/README.md) | The shared database schema, Row Level Security policies, and setup SQL | Not deployed — run once against your Supabase project |
+
+Both apps talk to the **same Supabase project** (same database, same
+storage bucket) directly from the browser using the public
+anon/publishable key. Row Level Security is what actually enforces that
+only a signed-in, promoted admin account can write data — not which app
+happens to be calling it. Neither app needs a server of its own; both
+build to plain static files.
+
+## Getting started
+
+1. Set up the database once — see [supabase/README.md](supabase/README.md).
+2. Set up and run each app independently:
 
 ```sh
 git clone https://github.com/558esther/essy-lux.git
 cd essy-lux
-npm install
-npm run dev
+
+cd client && npm install && cp .env.example .env && npm run dev   # storefront, in one terminal
+cd admin  && npm install && cp .env.example .env && npm run dev   # dashboard, in another terminal
 ```
 
-This is a standalone Vite + React + TanStack Router single-page app with a
-Supabase backend — see [supabase/README.md](supabase/README.md) for database
-setup and [.env.example](.env.example) for required environment variables.
+Fill in each `.env` with your Supabase project's URL and publishable key
+(see each app's own README for the exact variables it needs).
 
-```sh
-npm run build    # builds the static site into dist/
-npm run preview  # locally preview the production build
-```
-
-`npm run build` outputs plain static files to `dist/` — deployable to any
-static host (Render Static Site, Netlify, Cloudflare Pages, GitHub Pages,
-etc.) with an SPA rewrite rule so all routes fall back to `index.html`.
+Each app's `npm run build` outputs a plain `dist/` folder — deployable to
+any static host (Render Static Site, Netlify, Cloudflare Pages, GitHub
+Pages, etc.) with an SPA rewrite rule (`/* → /index.html`) so client-side
+routes don't 404 on a fresh page load. See each app's README for exact
+deploy steps.
